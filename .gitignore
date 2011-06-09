@@ -1,2 +1,5 @@
 *.swp
 *^
+*.class
+R.java
+*.log
