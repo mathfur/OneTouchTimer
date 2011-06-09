@@ -21,12 +21,21 @@ public class Frt110527 extends Activity // implements View.OnClickListener
 	TextView bar;
 	TextView restTime;
 	TextView indicator;
+	SharedPreferences preference;
+	SheredPreferences.Editor editor;
 
 	@Override
 		public void onCreate(Bundle savedInstanceState)
 		{
 			super.onCreate(savedInstanceState);
 			setContentView(R.layout.main);
+
+			preference = getDefaultSharedPreferemces("PREVIOUS_RESULT",MODE_PRIVATE);
+			editor = preferences.edit();
+
+			// TODO: 無かった場合の処理を書く
+			rest = editor.getInt("rest");
+			maxTime = editor.getInt("maxTime");
 
 			base = (LinearLayout) findViewById(R.id.base);
 			bar = (TextView) findViewById(R.id.bar);
@@ -64,6 +73,14 @@ public class Frt110527 extends Activity // implements View.OnClickListener
 				}
 			}, 0, 1000);
 		}
+
+	@Override
+		public void onDestroy(Bundle savedInstanceState)
+		{
+			editor.setInt("rest",rest);
+			editor.setInt("maxTime",maxTime);	
+		}
+
 	
 	private void reflesh()
 	{
@@ -74,14 +91,33 @@ public class Frt110527 extends Activity // implements View.OnClickListener
 			drawFlag = false;
 		}
 		bar.setHeight( (int)(getPercent()*base.getHeight()) );
+		
+		// set a color of rest time.
 		restTime.setText(toTimeString(rest));
+		if( rest >= 0 )
+		{
+			restTime.setTextColor(Color.WHITE);
+		}
+		else
+		{
+			restTime.setTextColor(Color.YELLOW);
+		}
+
+		Log.v("restTime.getTop()",Integer.toString(restTime.getTop()));
+		Log.v("restTime.getLeft()",Integer.toString(restTime.getLeft()));
 	}
 
 	private String toTimeString(int t)
 	{
+		boolean isNegative = (t < 0);
+		t = Math.abs(t);
 		int sec = t % 60;
 		int min = (t - sec)/60;
 		String result = String.format("%02d:%02d",min,sec);
+		if( isNegative )
+		{
+			result = "-" + result;
+		}
 		Log.v("toTimeString()",result);
 		return result;
 	}
