@@ -4,25 +4,26 @@ import android.app.*;
 import android.content.*;
 import android.graphics.*;
 import android.os.*;
+import android.preference.*;
+import android.util.*;
 import android.view.*;
 import android.widget.*;
-import android.util.*;
-import java.util.*;
 import java.lang.*;
+import java.util.*;
 
 public class Frt110527 extends Activity // implements View.OnClickListener
 {
 	//AlertProvider alert;
 	Timer timer;
-	int rest = 10;
-	int maxTime = 300;
+	int rest;
+	int maxTime;
 	boolean drawFlag = false;
 	LinearLayout base;
 	TextView bar;
 	TextView restTime;
 	TextView indicator;
 	SharedPreferences preference;
-	SheredPreferences.Editor editor;
+	SharedPreferences.Editor editor;
 
 	@Override
 		public void onCreate(Bundle savedInstanceState)
@@ -30,12 +31,11 @@ public class Frt110527 extends Activity // implements View.OnClickListener
 			super.onCreate(savedInstanceState);
 			setContentView(R.layout.main);
 
-			preference = getDefaultSharedPreferemces("PREVIOUS_RESULT",MODE_PRIVATE);
-			editor = preferences.edit();
+			preference = PreferenceManager.getDefaultSharedPreferences(this);
 
 			// TODO: 無かった場合の処理を書く
-			rest = editor.getInt("rest");
-			maxTime = editor.getInt("maxTime");
+			rest = preference.getInt("rest",10);
+			maxTime = preference.getInt("maxTime",300);
 
 			base = (LinearLayout) findViewById(R.id.base);
 			bar = (TextView) findViewById(R.id.bar);
@@ -75,10 +75,13 @@ public class Frt110527 extends Activity // implements View.OnClickListener
 		}
 
 	@Override
-		public void onDestroy(Bundle savedInstanceState)
+		public void onDestroy()
 		{
-			editor.setInt("rest",rest);
-			editor.setInt("maxTime",maxTime);	
+			super.onDestroy();
+			SharedPreferences.Editor editor = preference.edit();
+			editor.putInt("rest",rest);
+			editor.putInt("maxTime",maxTime);	
+			editor.commit();
 		}
 
 	
@@ -90,7 +93,8 @@ public class Frt110527 extends Activity // implements View.OnClickListener
 			//alert.do_alerts(maxTime,rest);
 			drawFlag = false;
 		}
-		bar.setHeight( (int)(getPercent()*base.getHeight()) );
+		int fullSizeOfBar = (int) (base.getHeight() - indicator.getHeight() - restTime.getHeight() );
+		bar.setHeight( (int)(getPercent()*fullSizeOfBar) );
 		
 		// set a color of rest time.
 		restTime.setText(toTimeString(rest));
